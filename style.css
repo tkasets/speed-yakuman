@@ -1,0 +1,290 @@
+:root {
+  --felt: #14532d;
+  --felt-dark: #0d3b20;
+  --ink: #1b1b1b;
+  --tile: #f7f1dc;
+  --tile-edge: #c9bd94;
+  --red: #c0262d;
+  --blue: #1d4ed8;
+  --green: #15803d;
+  --accent: #fbbf24;
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0; color: #f4f4f4; min-height: 100vh;
+  background: radial-gradient(ellipse at 50% 0%, #1b1b22 0%, #0b0b10 70%);
+  font-family: "Yu Gothic UI", "Meiryo", system-ui, sans-serif;
+}
+header {
+  display: flex; flex-wrap: wrap; align-items: baseline; gap: 8px 28px;
+  padding: 10px 20px; background: linear-gradient(#15151c, #0b0b10); border-bottom: 1px solid #e6c36a66;
+}
+.timer { display: flex; align-items: baseline; gap: 8px; }
+.timer .label { font-size: 12px; opacity: .7; }
+.timer span:last-child { font-size: 36px; font-weight: 700; font-variant-numeric: tabular-nums; color: var(--accent); }
+.timer.sub span:last-child { font-size: 20px; color: #fff; }
+.stats { margin-left: auto; font-size: 13px; opacity: .85; }
+main { padding: 12px 16px 40px; max-width: 980px; margin: 0 auto; }
+.home {
+  align-self: center; width: 40px; height: 40px; border-radius: 50%; border: 1px solid #e6c36a88; background: #ffffff10;
+  color: #e6c36a; font-size: 22px; line-height: 1; cursor: pointer; font-family: inherit;
+}
+.home:hover { background: #e6c36a33; }
+
+/* 盤面: 一辺 --S の正方形に固定。1牌幅 --w を基準に全要素を絶対配置する */
+.board {
+  --S: min(94vw, 68vh, 720px);
+  --w: calc(var(--S) / 17.67);
+  position: relative; width: var(--S); height: var(--S); margin: 0 auto; border-radius: 18px;
+  background: radial-gradient(ellipse at 50% 40%, #1f7a49 0%, #145c35 45%, #0a3a21 100%), #0f4a2a;
+  box-shadow: 0 0 0 calc(var(--w) * .28) #6b4423, 0 0 0 calc(var(--w) * .34) #e6c36a, 0 0 0 calc(var(--w) * .6) #3a2411,
+    0 18px 40px rgba(0,0,0,.6), inset 0 0 90px rgba(0,0,0,.55);
+}
+.board::before { /* フェルトの織り目 */
+  content: ""; position: absolute; inset: 0; border-radius: inherit; pointer-events: none; opacity: .16; mix-blend-mode: overlay;
+  background-image: repeating-linear-gradient(45deg, #fff 0 1px, transparent 1px 3px), repeating-linear-gradient(-45deg, #000 0 1px, transparent 1px 3px);
+}
+.board .piece { position: absolute; }
+.board .tile { position: absolute; border-radius: calc(var(--w) * .1); filter: drop-shadow(0 2px 1px rgba(0,0,0,.55)); }
+.board .tile.last { outline: 2px solid var(--accent); outline-offset: 0; z-index: 2; }
+.wall-tile {
+  position: absolute; background: url(img/Back.svg) center / 100% 100% no-repeat; border-radius: calc(var(--w) * .1);
+  filter: hue-rotate(175deg) saturate(.75) brightness(.8) drop-shadow(0 calc(var(--w) * .07) 0 #c9bd94) drop-shadow(0 2px 2px rgba(0,0,0,.5));
+}
+.center {
+  position: absolute; display: flex; flex-direction: column; align-items: center; justify-content: center;
+  text-align: center; font-size: calc(var(--w) * .36); color: #f4f4f4cc; border: 1px solid #e6c36a55; border-radius: 8px;
+  background: #00000026; line-height: 1.5;
+}
+.center .notice { color: var(--accent); font-weight: 700; font-size: calc(var(--w) * .5); min-height: 1.2em; }
+.center .cnt { font-size: calc(var(--w) * .7); font-weight: 700; color: var(--accent); font-variant-numeric: tabular-nums; }
+.pname { position: absolute; font-size: calc(var(--w) * .34); color: #e6c36a; transform-origin: center; white-space: nowrap; }
+
+
+.tile {
+  position: relative; display: inline-block; width: 44px; aspect-ratio: 3 / 4; padding: 0; border: 0;
+  background: url(img/Front.svg) center / 100% 100% no-repeat; border-radius: 5px;
+  filter: drop-shadow(0 3px 2px rgba(0,0,0,.55)); user-select: none;
+}
+.tile img { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }
+.tile.small { width: 30px; }
+.tile.last { outline: 3px solid var(--accent); outline-offset: 1px; }
+.tile.dora {
+  filter: drop-shadow(0 0 3px #ffe08a) drop-shadow(0 0 9px #fbbf24) drop-shadow(0 3px 2px rgba(0,0,0,.55));
+  animation: dora-glow 1.2s ease-in-out infinite alternate;
+}
+.tile.dora::before { /* 牌面を淡い金色に染める */
+  content: ""; position: absolute; inset: 0; border-radius: inherit; pointer-events: none;
+  background: radial-gradient(circle at 50% 40%, #ffe08a66, #fbbf2433 70%, transparent);
+  mix-blend-mode: multiply;
+}
+@keyframes dora-glow {
+  to { filter: drop-shadow(0 0 5px #fff3c4) drop-shadow(0 0 16px #fbbf24) drop-shadow(0 3px 2px rgba(0,0,0,.55)); }
+}
+
+.hand-area { margin-top: 14px; display: flex; flex-wrap: wrap; align-items: flex-end; gap: 14px; }
+.hand { display: flex; gap: 3px; }
+button.tile { cursor: pointer; transition: transform .08s; }
+button.tile:hover { transform: translateY(-8px); }
+.melds { display: flex; gap: 10px; }
+.meld { display: flex; gap: 1px; }
+.drawn { margin-left: 10px; }
+
+.actions { margin-top: 16px; display: flex; flex-wrap: wrap; gap: 8px; min-height: 48px; }
+.btn {
+  font-family: inherit; font-size: 18px; font-weight: 700; padding: 10px 20px; border-radius: 8px;
+  border: 0; cursor: pointer; background: #e5e7eb; color: #111;
+}
+.btn:hover { filter: brightness(1.08); }
+.btn.primary { background: var(--accent); }
+.btn.win { background: #ef4444; color: #fff; animation: pulse .6s infinite alternate; }
+.btn.ghost { background: transparent; color: #fff; border: 1px solid #ffffff55; }
+@keyframes pulse { to { transform: scale(1.06); } }
+.hint { font-size: 12px; opacity: .65; margin-top: 10px; }
+
+.overlay {
+  position: fixed; inset: 0; background: #000b; display: flex; align-items: center; justify-content: center; z-index: 10;
+}
+.card { background: #fffaf0; color: #111; border-radius: 16px; padding: 28px 36px; text-align: center; max-width: 92vw; }
+.card h2 { margin: 0 0 4px; font-size: 20px; }
+.card .big { font-size: 56px; font-weight: 800; color: var(--red); font-variant-numeric: tabular-nums; }
+.card .yaku { font-size: 28px; font-weight: 800; margin: 6px 0; }
+.card .meta { opacity: .75; margin-bottom: 16px; }
+.card .best { color: #b45309; font-weight: 800; margin-bottom: 8px; }
+.start { text-align: center; padding: 40px 0; }
+.start h1 { font-size: 40px; margin: 0 0 8px; }
+.start p { opacity: .85; line-height: 1.7; }
+
+@media (max-width: 640px) {
+  .tile { width: 32px; }
+  .tile.small { width: 21px; }
+  .timer span:last-child { font-size: 28px; }
+}
+
+.tile.queued { transform: translateY(-10px); outline: 3px solid var(--accent); outline-offset: 1px; }
+
+/* 流局の告知 */
+.ryuukyoku {
+  position: absolute; inset: 0; z-index: 5; display: flex; flex-direction: column; align-items: center; justify-content: center;
+  background: radial-gradient(circle, #000000b0 0%, #00000070 70%); border-radius: inherit; pointer-events: none;
+  animation: rk-in .35s ease-out;
+}
+.rk-main {
+  font-size: calc(var(--w) * 4.2); font-weight: 900; letter-spacing: .3em; padding-left: .3em; color: #ffe08a;
+  text-shadow: 0 0 calc(var(--w) * .6) #f59e0b, 0 calc(var(--w) * .1) 0 #7c4a03, 0 0 calc(var(--w) * 2) #000;
+  animation: rk-glow 1s ease-in-out infinite alternate;
+}
+.rk-sub { margin-top: calc(var(--w) * .3); font-size: calc(var(--w) * .6); color: #fff; letter-spacing: .1em; }
+@keyframes rk-in { from { opacity: 0; transform: scale(1.4); } to { opacity: 1; transform: scale(1); } }
+@keyframes rk-glow { to { filter: brightness(1.25); } }
+.card .row { display: flex; gap: 10px; justify-content: center; margin-top: 12px; }
+
+/* 聴牌表示・鳴き強調 */
+.tenpai { margin-top: 12px; height: 36px; align-content: flex-start; display: flex; flex-wrap: wrap; align-items: center; gap: 6px 14px; font-size: 13px; }
+.tp-label { background: #22c55e; color: #06280f; padding: 2px 10px; border-radius: 999px; font-size: 13px; }
+.tp-title { opacity: .75; }
+.tp-opt { display: inline-flex; align-items: center; gap: 4px; padding: 3px 8px; background: #ffffff10; border-radius: 8px; }
+.tile.inline { position: relative; display: inline-block; }
+.tenpai .tile.small { width: 24px; }
+.wait { display: inline-block; padding: 1px; border-radius: 5px; line-height: 0; }
+.wait.yakuman { box-shadow: 0 0 0 2px var(--accent), 0 0 8px #fbbf24; }
+.wait.normal { box-shadow: 0 0 0 1px #ffffff55; }
+.legend { margin-left: 8px; font-size: 11px; opacity: .8; }
+.legend i { display: inline-block; width: 12px; height: 12px; margin: 0 3px 0 8px; vertical-align: -2px; }
+.tile.tp::before { content: "聴"; position: absolute; top: -9px; left: 50%; transform: translateX(-50%); font-size: 10px; font-weight: 800;
+  background: #22c55e; color: #06280f; border-radius: 6px; padding: 0 5px; z-index: 3; }
+.tile.callable { outline: 3px solid #38bdf8; outline-offset: 1px; transform: translateY(-6px); }
+
+/* 鳴き対象 (河の牌と中央の大表示) */
+.board .tile.last { outline: 3px solid var(--accent); scale: 1.18; z-index: 4; animation: last-pulse .5s ease-in-out infinite alternate; }
+@keyframes last-pulse { to { box-shadow: 0 0 calc(var(--w) * .7) #fbbf24; } }
+.center .called-label { font-size: calc(var(--w) * .38); color: var(--accent); font-weight: 700; margin-bottom: calc(var(--w) * .15); }
+.board .center .tile.called { width: calc(var(--w) * 2); outline: 3px solid var(--accent); animation: last-pulse .5s ease-in-out infinite alternate; }
+
+/* リーチ・フリテン */
+.rii-label { background: #ef4444; color: #fff; padding: 2px 10px; border-radius: 999px; font-size: 13px; }
+.fu-label { background: #6b7280; color: #fff; padding: 2px 10px; border-radius: 999px; font-size: 13px; }
+.tile.dim { filter: brightness(.45) saturate(.6); }
+.tile.locked { filter: brightness(.7); cursor: not-allowed; }
+.tile.locked:hover { transform: none; }
+.board .tile.riichi-tile { outline: 2px solid #ef4444; }
+.board .stick { position: absolute; display: flex; align-items: center; }
+.board .stick i { display: block; width: 100%; height: 100%; background: linear-gradient(#fff, #d9d9d9); border-radius: 99px; box-shadow: 0 1px 2px #0008; position: relative; }
+.board .stick i::after { content: ""; position: absolute; left: 50%; top: 50%; width: 22%; height: 60%; transform: translate(-50%, -50%); background: #c0262d; border-radius: 50%; aspect-ratio: 1; }
+.center .toast { color: #fca5a5; font-weight: 700; font-size: calc(var(--w) * .42); padding: 0 calc(var(--w) * .2); }
+
+.tenpai-pill {
+  position: absolute; display: flex; align-items: center; justify-content: center; white-space: nowrap;
+  background: #22c55e; color: #06280f; font-weight: 800; border-radius: 999px; font-size: calc(var(--w) * .42);
+  box-shadow: 0 0 calc(var(--w) * .5) #22c55e99;
+}
+.riichi-ask { display: inline-flex; align-items: center; gap: 8px; font-weight: 700; margin-right: 6px; }
+.riichi-ask .tile.small { width: 30px; }
+
+/* ===== 1画面に収める (PC・スマホ共通): 盤面の一辺 --SZ を高さ・幅の小さい方に合わせる ===== */
+:root {
+  --hdr: 56px; --act: 56px; --pad: 26px;
+  --SZ: min(calc(100vw - 36px), calc((100vh - var(--hdr) - var(--act) - var(--pad)) / 1.09), 900px);
+  --hw: calc(var(--SZ) / 16.2);
+}
+@supports (height: 100dvh) {
+  :root { --SZ: min(calc(100vw - 36px), calc((100dvh - var(--hdr) - var(--act) - var(--pad)) / 1.09), 900px); }
+}
+html, body { height: 100%; overflow: hidden; }
+body { display: flex; flex-direction: column; height: 100vh; height: 100dvh; }
+.board { --S: var(--SZ); }
+header { flex: none; height: var(--hdr); padding: 0 12px; flex-wrap: nowrap; align-items: center; gap: 6px 16px; overflow: hidden; }
+.timer span:last-child { font-size: clamp(22px, 5vw, 34px); }
+.timer.sub span:last-child { font-size: clamp(15px, 3.6vw, 20px); }
+.stats { white-space: nowrap; }
+.reset { margin-left: 12px; padding: 6px 14px; font-size: 14px; white-space: nowrap; }
+main { flex: 1; min-height: 0; max-width: none; margin: 0; padding: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px; }
+.hand-area { width: var(--SZ); margin: 0; flex-wrap: nowrap; justify-content: center; align-items: flex-end; gap: calc(var(--hw) * .3); }
+.hand-area .tile { width: var(--hw); }
+.hand-area .melds .tile.small { width: calc(var(--hw) * .78); }
+.hand { gap: 2px; }
+.drawn { margin-left: calc(var(--hw) * .2); }
+.actions { margin: 0; width: var(--SZ); height: var(--act); min-height: 0; align-content: center; justify-content: center; gap: 6px; }
+.btn { font-size: clamp(13px, 3.6vw, 18px); padding: clamp(6px, 1.8vw, 10px) clamp(10px, 3.2vw, 20px); }
+.hint, .tenpai { display: none; }
+.start { padding: 2vh 12px; }
+.start h1 { font-size: clamp(28px, 8vw, 40px); }
+
+/* 中央ボックス: 本文+ステータスpill */
+.center { justify-content: space-between; padding: calc(var(--w) * .2) 0; }
+.center .cbody { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+.center .pills { display: flex; gap: calc(var(--w) * .12); min-height: calc(var(--w) * .6); }
+.pill { font-weight: 800; border-radius: 999px; padding: 0 calc(var(--w) * .25); font-size: calc(var(--w) * .34); line-height: calc(var(--w) * .6); white-space: nowrap; }
+.pill.tp { background: #22c55e; color: #06280f; box-shadow: 0 0 calc(var(--w) * .4) #22c55e99; }
+.pill.rii { background: #ef4444; color: #fff; }
+.pill.fu { background: #6b7280; color: #fff; }
+
+@media (max-width: 640px) {
+  :root { --hdr: 46px; --act: 84px; --pad: 20px; }
+  .stats, header .timer.sub:nth-of-type(2) { display: none; }
+  .reset { margin-left: auto; padding: 5px 10px; font-size: 13px; }
+  .home { width: 34px; height: 34px; font-size: 18px; }
+  .actions .btn { padding: 6px 10px; }
+}
+
+/* 手牌は左詰め固定 (ツモ牌が増えても手牌がずれない)・副露は右端・配り直しは左下 */
+.hand-area { justify-content: flex-start; }
+.hand-area .melds { margin-left: auto; }
+.actions { display: flex; align-items: center; justify-content: flex-start; flex-wrap: nowrap; gap: 8px; }
+.reset-btn { flex: none; margin: 0; padding: clamp(6px, 1.8vw, 10px) clamp(8px, 2.6vw, 16px); white-space: nowrap; }
+.act-main { flex: 1; display: flex; flex-wrap: wrap; justify-content: flex-end; align-content: center; gap: 6px; min-width: 0; }
+
+.card .inds { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 4px; margin: 6px 0 10px; font-size: 13px; }
+.card .inds .sep { margin-left: 12px; }
+.card .inds .tile.small { width: 28px; }
+
+.card .winhand { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: center; gap: 4px 14px; margin: 10px 0 4px; }
+.card .winhand .tile.small { width: clamp(20px, 5.2vw, 32px); }
+.card .wh-tiles, .card .wh-melds, .card .wh-win { display: flex; gap: 2px; }
+.card .wh-melds { gap: 8px; }
+.card .wh-win .tile { outline: 3px solid #ef4444; outline-offset: 1px; }
+.card .winhand .meld { display: flex; gap: 1px; }
+
+.start { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 28px; }
+.start h1 { margin: 0; letter-spacing: .12em; color: #ffe08a; text-shadow: 0 0 20px #f59e0b66; }
+.start .btn { font-size: 22px; padding: 14px 40px; }
+
+header[hidden] { display: none; }
+
+/* ===== 筆文字フォント (Google Fonts: Yuji Syuku / Yuji Boku)・盤面の枠がヘッダーに被らない余白 ===== */
+:root {
+  --brush: "Yuji Syuku", "Yuji Boku", "Yu Mincho", "Hiragino Mincho ProN", "MS PMincho", serif;
+  --brush-bold: "Yuji Boku", "Yuji Syuku", "Yu Mincho", serif;
+  --SZ: min(calc(100vw - 36px), calc((100vh - var(--hdr) - var(--act) - var(--pad)) / 1.17), 900px);
+}
+@supports (height: 100dvh) {
+  :root { --SZ: min(calc(100vw - 36px), calc((100dvh - var(--hdr) - var(--act) - var(--pad)) / 1.17), 900px); }
+}
+body, button { font-family: var(--brush); font-synthesis: none; }
+.timer span:last-child, .start h1, .card .big, .card .yaku, .rk-main, .btn, .pill, .center .cnt, .card h2 { font-family: var(--brush-bold); font-weight: 400; }
+.timer span:last-child { letter-spacing: .04em; }
+.start h1 { font-size: clamp(36px, 10vw, 56px); letter-spacing: .2em; }
+.btn { letter-spacing: .06em; }
+.board { margin: calc(var(--w) * .8) 0 calc(var(--w) * .5); }
+
+/* ===== 明朝体に変更 (Shippori Mincho) ===== */
+:root {
+  --brush: "Shippori Mincho", "Yu Mincho", "Hiragino Mincho ProN", "MS PMincho", serif;
+  --brush-bold: var(--brush);
+}
+body, button { font-family: var(--brush); font-synthesis: weight style; }
+.timer span:last-child, .start h1, .card .big, .card .yaku, .rk-main, .btn, .pill, .center .cnt, .card h2 { font-family: var(--brush); font-weight: 800; }
+.timer span:last-child { letter-spacing: 0; }
+.start h1 { letter-spacing: .2em; }
+.btn { letter-spacing: .04em; }
+
+.card .winhand { flex-wrap: nowrap; justify-content: center; }
+.card .winhand .wh-win { margin-left: 4px; }
+
+/* ショートカット表記はスマホ(タッチ端末・狭い画面)では出さない */
+@media (hover: none) and (pointer: coarse), (max-width: 640px) { .kbd { display: none; } }
+
+/* 上がり画面: 手牌とボタンの間を少し空ける */
+.card .winhand { margin-bottom: 18px; }
+.card .best { margin-bottom: 14px; }
+.card > .btn { margin-top: 18px; }

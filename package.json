@@ -1,0 +1,1 @@
+{ "name": "speed-yakuman", "private": true, "type": "module", "scripts": { "test": "node --test" } }
