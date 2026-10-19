@@ -173,13 +173,13 @@ export function render(game) {
     : '';
   const furiten = waits.length ? game.furitenReason(waitsShape(game)) : '';
   const board = boardHTML(game, waits.length > 0, furiten);
-  app.innerHTML = `
+  app.innerHTML = `<div class="play">
     ${board}
     <div class="hand-area">
       <div class="hand">${mine}</div>${drawn}
       <div class="melds">${game.melds.map((m) => meldHTML(m, dora)).join('')}</div>
     </div>
-    <div class="actions"><button class="btn ghost reset-btn" data-act="reset">配り直し <span class="kbd">(R)</span></button><div class="act-main">${actionsHTML(game)}</div></div>`;
+    <div class="actions"><button class="btn ghost reset-btn" data-act="reset">配り直し <span class="kbd">(R)</span></button><div class="act-main">${actionsHTML(game)}</div></div></div>`;
 }
 
 export function showResult(game, { isBest }) {

@@ -317,3 +317,11 @@ main { justify-content: flex-start; }
 .act-main { gap: 4px; }
 @media (max-width: 640px) { :root { --act: 76px; } }
 .board .center .tile.called { width: calc(var(--w) * 1.7); }
+.start { flex: 1; width: 100%; padding: 0 12px; }
+
+/* プレイ画面: 盤面+手牌+ボタンをひとまとめにして縦中央へ。高さは固定値で決めるので中身が変わっても動かない */
+main { justify-content: center; }
+.play {
+  flex: none; display: flex; flex-direction: column; align-items: center; gap: 10px;
+  height: calc(var(--SZ) * 1.1563 + var(--act) + 20px);
+}
