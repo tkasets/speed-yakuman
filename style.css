@@ -308,3 +308,12 @@ body, button { font-family: var(--brush); font-synthesis: weight style; }
 
 /* 盤面は上詰めで固定: 下側(手牌・ボタン)の高さが変わっても盤面が動かない */
 main { justify-content: flex-start; }
+
+/* 操作ボタンは小さめに。ポン・チーが並んでも2段に収まる */
+:root { --act: 72px; }
+.actions .btn, .actions .reset-btn {
+  font-size: clamp(11px, 2.9vw, 14px); padding: 5px clamp(7px, 2vw, 12px); letter-spacing: 0; white-space: nowrap; line-height: 1.5;
+}
+.act-main { gap: 4px; }
+@media (max-width: 640px) { :root { --act: 76px; } }
+.board .center .tile.called { width: calc(var(--w) * 1.7); }
