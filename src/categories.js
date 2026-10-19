@@ -4,7 +4,6 @@ export const CATEGORIES = [
   { id: '跳満', label: '跳満' },
   { id: '倍満', label: '倍満' },
   { id: '三倍満', label: '三倍満' },
-  { id: '数え役満', label: '数え役満' },
   { id: '天和', label: '天和' },
   { id: '国士無双', label: '国士無双' },
   { id: '四暗刻', label: '四暗刻' },
@@ -17,6 +16,7 @@ export const CATEGORIES = [
   { id: '九蓮宝燈', label: '九蓮宝燈' },
   { id: '四槓子', label: '四槓子' },
   { id: '大七星', label: '大七星' },
+  { id: '数え役満', label: '数え役満' },
 ];
 
 export const DEFAULT_CAT = CATEGORIES[0].id;
