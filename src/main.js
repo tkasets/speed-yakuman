@@ -4,6 +4,13 @@ import { addRecord } from './storage.js';
 import { render, showResult, hideResult, startClock, showConfirm, hideConfirm } from './ui.js';
 
 // デバッグ: ?debug=1&hand=11123456789999m (14枚目がツモ牌) / ?speed=ミリ秒
+// 実際に見えている高さ(スマホのアドレスバー等を除く)をCSSへ渡す。ページ全体が見える範囲に収まるようにする
+const setVh = () => document.documentElement.style.setProperty("--vh100", (window.visualViewport ? window.visualViewport.height : window.innerHeight) + "px");
+setVh();
+window.addEventListener("resize", setVh);
+window.addEventListener("orientationchange", setVh);
+if (window.visualViewport) window.visualViewport.addEventListener("resize", setVh);
+
 const q = new URLSearchParams(location.search);
 const forcedHand = q.has('debug') && q.get('hand') ? parseHand(q.get('hand')) : null; // 手牌指定は ?debug=1 のときだけ
 

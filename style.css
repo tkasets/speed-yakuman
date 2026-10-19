@@ -325,3 +325,10 @@ main { justify-content: center; }
   flex: none; display: flex; flex-direction: column; align-items: center; gap: 10px;
   height: calc(var(--SZ) * 1.1563 + var(--act) + 20px);
 }
+
+/* スマホ: 画面全体を固定して、タップでページがスクロールして上端(ヘッダー)がはみ出さないようにする */
+:root {
+  --SZ: min(calc(100vw - 36px), calc((var(--vh100, 100dvh) - var(--hdr) - var(--act) - var(--pad)) / 1.17), 900px);
+}
+html, body { overscroll-behavior: none; }
+body { position: fixed; top: 0; left: 0; width: 100%; height: var(--vh100, 100dvh); overflow: hidden; }
