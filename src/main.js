@@ -86,3 +86,4 @@ if (q.has('autoplay')) {
   }, 5);
 }
 if (q.has('autowin')) setTimeout(() => game.tsumo(), 300); // デバッグ: 即ツモ和了
+if (q.has('autoriichi')) setTimeout(() => { game.pick('d'); game.confirmRiichi(true); }, 200); // デバッグ: 即リーチ

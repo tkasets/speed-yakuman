@@ -288,3 +288,23 @@ body, button { font-family: var(--brush); font-synthesis: weight style; }
 .card .winhand { margin-bottom: 18px; }
 .card .best { margin-bottom: 14px; }
 .card > .btn { margin-top: 18px; }
+
+/* ツモ牌の有無で手牌エリアの高さが変わらないようにする (盤面が上下にずれない) */
+.hand-area { height: calc(var(--hw) * 1.34); flex: none; }
+.hand-area .drawn { display: flex; line-height: 0; }
+.hand-area .tile { display: block; }
+.hand-area .hand, .hand-area .melds { line-height: 0; }
+
+/* リーチ棒は捨て牌と重ならないよう、状態ピルの中に入れる */
+.pill.rii::before {
+  content: ""; display: inline-block; width: 1.9em; height: .42em; margin-right: .45em; vertical-align: middle;
+  border-radius: 99px; background: radial-gradient(circle, #c0262d 0 30%, transparent 33%), linear-gradient(#fff, #dcdcdc);
+  box-shadow: 0 1px 2px #0006;
+}
+.board .stick { display: none; }
+.center .pills { flex-wrap: wrap; justify-content: center; max-width: 100%; }
+.pill { font-size: calc(var(--w) * .29); padding: 0 calc(var(--w) * .16); }
+.pill.rii::before { width: 1.5em; margin-right: .3em; }
+
+/* 盤面は上詰めで固定: 下側(手牌・ボタン)の高さが変わっても盤面が動かない */
+main { justify-content: flex-start; }

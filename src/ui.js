@@ -108,7 +108,6 @@ function boardHTML(game, tenpai, furiten) {
     parts.push(`<span class="pname" style="left:${calc(C + nx)};top:${calc(C + ny)};transform:translate(-50%,-50%) rotate(${-p * 90}deg)">${NAMES[p]}</span>`);
   }
 
-  if (game.riichi) parts.push(`<div class="stick" style="${place(-2.0, 2.25, 1.8, 0.16)}"><i></i></div>`);
 
   // 流局の告知
   if (game.notice) {
