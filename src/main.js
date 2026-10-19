@@ -1,7 +1,9 @@
 import { Game } from './game.js';
 import { parseHand } from './tiles.js';
 import { addRecord } from './storage.js';
-import { render, showResult, hideResult, startClock, showConfirm, hideConfirm } from './ui.js';
+import { render, showResult, hideResult, startClock, showConfirm, hideConfirm, showRanking, hideRanking } from './ui.js';
+import { fetchRanking, submitScore } from './api.js';
+import { categoryOf, DEFAULT_CAT } from './categories.js';
 
 // デバッグ: ?debug=1&hand=11123456789999m (14枚目がツモ牌) / ?speed=ミリ秒
 // 実際に見えている高さ(スマホのアドレスバー等を除く)をCSSへ渡す。ページ全体が見える範囲に収まるようにする
@@ -35,9 +37,40 @@ const next = () => {
   }
 };
 
+// ランキング画面を開く (タブ切り替えも同じ)。登録直後は自分の行を強調する
+let rankMine = '';
+let rankSeq = 0;
+function openRanking(tab, mine = '') {
+  rankMine = mine;
+  const seq = ++rankSeq;
+  showRanking({ tab, list: null, mine });
+  fetchRanking(tab).then(
+    (list) => seq === rankSeq && showRanking({ tab, list, mine }),
+    () => seq === rankSeq && showRanking({ tab, list: false, mine }),
+  );
+}
+
+// 上がり画面からランキングに登録する
+async function submitRanking(btn) {
+  const r = game.result;
+  const msg = document.getElementById('rankMsg');
+  if (!r || btn.disabled) return;
+  const name = (document.getElementById('nick').value || '').trim() || '名無し';
+  btn.disabled = true;
+  msg.textContent = '登録中…';
+  try {
+    const res = await submitScore({ name, ms: Math.round(r.ms), yaku: r.yaku, resets: r.resets });
+    msg.innerHTML = `${res.rank}位に登録しました！ <a href="#" data-act="rank-open" data-cat="${res.cat || categoryOf(r.yaku)}" data-mine="${res.name.replace(/"/g, '')}">ランキングを見る</a>`;
+  } catch (e) {
+    btn.disabled = false;
+    msg.textContent = e.status === 429 ? '短時間に登録しすぎです。少し待ってからもう一度どうぞ。' : '登録できませんでした。もう一度お試しください。';
+  }
+}
+
 document.addEventListener('click', (e) => {
   const el = e.target.closest('[data-act]');
   if (!el) return;
+  if (el.tagName === 'A') e.preventDefault();
   const { act, i, t } = el.dataset;
   if (act === 'start' || act === 'next') next();
   else if (act === 'discard') game.pick(i === 'd' ? 'd' : Number(i));
@@ -47,6 +80,10 @@ document.addEventListener('click', (e) => {
     else if (game.phase === 'won') { hideResult(); game.home(); }
   }
   else if (act === 'tsumo') game.tsumo();
+  else if (act === 'rank-open') openRanking(el.dataset.cat || DEFAULT_CAT, el.dataset.mine || '');
+  else if (act === 'rank-tab') openRanking(el.dataset.cat, rankMine);
+  else if (act === 'rank-close') hideRanking();
+  else if (act === 'rank-submit') submitRanking(el);
   else if (act === 'riichi-yes') game.confirmRiichi(true);
   else if (act === 'riichi-no') game.confirmRiichi(false);
   else if (act === 'riichi-cancel') game.cancelRiichiPrompt();
@@ -58,6 +95,11 @@ document.addEventListener('click', (e) => {
 
 document.addEventListener('keydown', (e) => {
   const k = e.key.toLowerCase();
+  if (e.target && e.target.tagName === 'INPUT') return; // ニックネーム入力中はショートカットを無効に
+  if (document.getElementById('ranking')) {
+    if (k === 'escape') hideRanking();
+    return;
+  }
   if (document.getElementById('confirm')) {
     if (k === 'escape') hideConfirm();
     return;
@@ -94,3 +136,4 @@ if (q.has('autoplay')) {
 }
 if (q.has('autowin')) setTimeout(() => game.tsumo(), 300); // デバッグ: 即ツモ和了
 if (q.has('autoriichi')) setTimeout(() => { game.pick('d'); game.confirmRiichi(true); }, 200); // デバッグ: 即リーチ
+if (q.has('showrank')) openRanking(q.get('showrank') || DEFAULT_CAT, q.get('mine') || ''); // デバッグ

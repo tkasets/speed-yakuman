@@ -332,3 +332,69 @@ main { justify-content: center; }
 }
 html, body { overscroll-behavior: none; }
 body { position: fixed; top: 0; left: 0; width: 100%; height: var(--vh100, 100dvh); overflow: hidden; }
+
+/* ランキング */
+.rank-form { margin: 8px 0 14px; }
+.rank-row { display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; }
+.rank-row input { font: inherit; font-size: 16px; padding: 8px 12px; border: 1px solid #bbb; border-radius: 8px; width: 11em; max-width: 100%; }
+.rank-msg { min-height: 1.4em; margin-top: 6px; font-size: 14px; color: #b45309; font-weight: 700; }
+.rank-msg a { color: #1d4ed8; }
+.rank-table { border-collapse: collapse; margin: 8px auto 4px; font-size: clamp(12px, 3.4vw, 15px); }
+.rank-table td { padding: 5px 8px; border-bottom: 1px solid #0002; text-align: left; }
+.rank-table .rk { font-weight: 800; text-align: center; }
+.rank-table .tm { font-variant-numeric: tabular-nums; font-weight: 800; color: #c0262d; white-space: nowrap; }
+.rank-table .yk { font-size: .85em; color: #555; }
+.rank-table tr:nth-child(1) .rk { color: #b8860b; } .rank-table tr:nth-child(2) .rk { color: #888; } .rank-table tr:nth-child(3) .rk { color: #a0522d; }
+.start .btn.ghost { color: #fff; }
+
+/* ランキング画面 (タブ切り替え) */
+.rank-card { width: min(94vw, 560px); padding: 16px 16px 14px; text-align: left; display: flex; flex-direction: column; max-height: 92vh; max-height: 92dvh; }
+.rank-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
+.rank-head h2 { margin: 0; font-size: 20px; letter-spacing: .1em; }
+.rank-x { border: 0; background: #0001; width: 32px; height: 32px; border-radius: 50%; font-size: 20px; line-height: 1; cursor: pointer; color: #333; }
+.rank-x:hover { background: #0002; }
+.rank-tabs {
+  display: flex; gap: 6px; overflow-x: auto; padding: 2px 2px 10px; margin: 0 -4px; scrollbar-width: thin;
+  -webkit-overflow-scrolling: touch; scroll-snap-type: x proximity;
+  mask-image: linear-gradient(90deg, transparent 0, #000 12px, #000 calc(100% - 20px), transparent 100%);
+  -webkit-mask-image: linear-gradient(90deg, transparent 0, #000 12px, #000 calc(100% - 20px), transparent 100%);
+}
+.rank-tab {
+  flex: none; scroll-snap-align: center; border: 1px solid #0003; background: #fff; color: #333; cursor: pointer;
+  padding: 6px 12px; border-radius: 999px; font: inherit; font-size: 14px; white-space: nowrap;
+}
+.rank-tab:hover { background: #fff4d6; }
+.rank-tab.on { background: #fbbf24; border-color: #d99a06; color: #111; font-weight: 800; }
+.rank-sub { font-size: 13px; color: #555; margin: 2px 2px 6px; display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; }
+.rank-sub b { font-size: 16px; color: #111; }
+.rank-sub span { font-size: 12px; opacity: .75; }
+.rank-body { height: calc(10 * 38px + 8px); overflow-y: auto; border-top: 1px solid #0002; }
+.rank-empty { height: 100%; display: flex; align-items: center; justify-content: center; text-align: center; color: #666; line-height: 1.8; padding: 0 12px; }
+.rank-card .rank-table { width: 100%; margin: 0; border-collapse: collapse; }
+.rank-card .rank-table td { height: 38px; padding: 0 6px; border-bottom: 1px solid #0001; vertical-align: middle; }
+.rank-card .rank-table .rk { width: 40px; text-align: center; }
+.rank-card .rank-table .nm { font-weight: 700; word-break: break-all; }
+.rank-card .rank-table .tm { text-align: right; white-space: nowrap; }
+.rank-card .rank-table .yk { font-size: 12px; color: #666; text-align: right; }
+.rank-card .rank-table tr.me { background: #fff1c2; }
+.medal { display: inline-flex; align-items: center; justify-content: center; width: 26px; height: 26px; border-radius: 50%; font-weight: 800; font-size: 14px; color: #555; }
+.medal.m1 { background: linear-gradient(#ffe27a, #d9a400); color: #4a3300; }
+.medal.m2 { background: linear-gradient(#f1f1f1, #aeb4bb); color: #333; }
+.medal.m3 { background: linear-gradient(#f0c39a, #b87333); color: #3b1f08; }
+@media (max-width: 640px) {
+  .rank-card .rank-table .yk { display: none; }
+  .rank-body { height: min(calc(10 * 38px + 8px), 52vh); }
+}
+
+.rank-tabs { scrollbar-width: none; }
+.rank-tabs::-webkit-scrollbar { display: none; }
+
+/* タブは横スクロールをやめて、折り返してすべて表示する */
+.rank-tabs { flex-wrap: wrap; overflow: visible; mask-image: none; -webkit-mask-image: none; gap: 6px; padding: 2px 0 10px; margin: 0; }
+.rank-tab { padding: 5px 11px; font-size: 13px; }
+.rank-brk { flex-basis: 100%; height: 0; }
+.rank-card { overflow-y: auto; }
+@media (max-width: 640px) {
+  .rank-tab { padding: 4px 9px; font-size: 12.5px; }
+  .rank-body { height: min(calc(10 * 38px + 8px), calc(92dvh - 330px)); min-height: 150px; }
+}

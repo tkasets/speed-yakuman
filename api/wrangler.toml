@@ -1,0 +1,9 @@
+name = "speedyakuman-api"
+main = "worker.js"
+compatibility_date = "2025-01-01"
+
+# 作成後に `wrangler d1 create speedyakuman-ranking` が返す database_id を入れる
+[[d1_databases]]
+binding = "DB"
+database_name = "speedyakuman-ranking"
+database_id = "c6f62834-62ef-4f2a-9625-46bfd3c32fc6"

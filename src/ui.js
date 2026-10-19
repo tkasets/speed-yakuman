@@ -1,6 +1,8 @@
 import { tileLabel, tileImage, doraOf } from './tiles.js';
 import { formatTime, now } from './timer.js';
 import { waitsOf } from './tenpai.js';
+import { rankingEnabled, savedNick } from './api.js';
+import { CATEGORIES, registrable } from './categories.js';
 
 const $ = (id) => document.getElementById(id);
 const PLAYERS = ['あなた (東)', 'CPU 南', 'CPU 西', 'CPU 北'];
@@ -136,7 +138,8 @@ export function render(game) {
 
   if (game.phase === 'idle') {
     app.innerHTML = `<div class="start"><h1>スピード役満</h1>
-      <button class="btn primary" data-act="start">スタート <span class="kbd">(Space)</span></button></div>`;
+      <button class="btn primary" data-act="start">スタート <span class="kbd">(Space)</span></button>
+      ${rankingEnabled() ? '<button class="btn ghost" data-act="rank-open">ランキング</button>' : ''}</div>`;
     return;
   }
   const dora = game._doraTiles();
@@ -201,6 +204,7 @@ export function showResult(game, { isBest }) {
       <div class="wh-win">${small(r.win.tile)}</div>
     </div>
     ${isBest ? '<div class="best">★ ベスト更新！ ★</div>' : ''}
+    ${rankingEnabled() && registrable(r) ? `<div class="rank-form"><div class="rank-row"><input id="nick" maxlength="12" placeholder="ニックネーム" value="${savedNick().replace(/"/g, '')}"><button class="btn primary" data-act="rank-submit">ランキングに登録</button></div><div id="rankMsg" class="rank-msg"></div></div>` : ''}
     <button class="btn primary" data-act="next">ホームに戻る <span class="kbd">(Space)</span></button></div>`;
   document.body.appendChild(el);
 }
@@ -244,3 +248,64 @@ export function hideConfirm() {
   const el = $("confirm");
   if (el) el.remove();
 }
+
+// ランキング表示。state = { tab, list, mine } list: null=読み込み中 / false=失敗 / 配列
+//  mine: 自分の登録名 (その行を強調する)
+export function showRanking(state) {
+  const { tab, list, mine } = state;
+  const old = $('ranking');
+  const keepScroll = old ? old.querySelector('.rank-tabs')?.scrollLeft : 0;
+  hideRanking();
+  const el = document.createElement('div');
+  el.className = 'overlay';
+  el.id = 'ranking';
+  const cat = CATEGORIES.find((c) => c.id === tab) || CATEGORIES[0];
+  let body;
+  if (list === null) body = '<div class="rank-empty">読み込み中…</div>';
+  else if (list === false) body = '<div class="rank-empty">ランキングを読み込めませんでした。</div>';
+  else if (!list.length) body = `<div class="rank-empty">${esc(cat.label)}の記録はまだありません。<br>最初の1位になろう！</div>`;
+  else {
+    body = `<table class="rank-table"><tbody>${list
+      .map(
+        (r) => `<tr class="${mine && r.name === mine ? 'me' : ''}"><td class="rk"><span class="medal m${r.rank <= 3 ? r.rank : 0}">${r.rank}</span></td><td class="nm">${esc(r.name)}</td><td class="tm">${formatTime(r.ms)}</td><td class="yk">${esc(r.yaku.join('・'))}</td></tr>`,
+      )
+      .join('')}</tbody></table>`;
+  }
+  const tabs = CATEGORIES.map(
+    (c) => `${c.id === '天和' ? '<span class="rank-brk"></span>' : ''}<button class="rank-tab ${c.id === tab ? 'on' : ''}" data-act="rank-tab" data-cat="${c.id}" role="tab" aria-selected="${c.id === tab}">${esc(c.label)}</button>`,
+  ).join('');
+  el.innerHTML = `<div class="card rank-card">
+    <div class="rank-head"><h2>ランキング</h2><button class="rank-x" data-act="rank-close" aria-label="閉じる">×</button></div>
+    <div class="rank-tabs" role="tablist">${tabs}</div>
+    <div class="rank-sub"><b>${esc(cat.label)}</b> TOP10</div>
+    <div class="rank-body">${body}</div>
+  </div>`;
+  el.addEventListener('click', (ev) => {
+    if (ev.target === el) hideRanking();
+  });
+  document.body.appendChild(el);
+  // 選択中のタブが見える位置までスクロール
+  const bar = el.querySelector('.rank-tabs');
+  // PCでは縦ホイールでタブを横にスクロールできるようにする
+  bar.addEventListener('wheel', (ev) => {
+    if (Math.abs(ev.deltaY) > Math.abs(ev.deltaX)) {
+      bar.scrollLeft += ev.deltaY;
+      ev.preventDefault();
+    }
+  }, { passive: false });
+  const on = bar.querySelector('.on');
+  if (keepScroll) bar.scrollLeft = keepScroll;
+  if (on) {
+    const l = on.offsetLeft - 12;
+    const r = on.offsetLeft + on.offsetWidth + 12;
+    if (l < bar.scrollLeft) bar.scrollLeft = l;
+    else if (r > bar.scrollLeft + bar.clientWidth) bar.scrollLeft = r - bar.clientWidth;
+  }
+}
+
+export function hideRanking() {
+  const el = $('ranking');
+  if (el) el.remove();
+}
+
+const esc = (s) => String(s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]);
