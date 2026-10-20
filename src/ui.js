@@ -113,7 +113,10 @@ function boardHTML(game, tenpai, furiten) {
 
   // 流局の告知
   if (game.notice) {
-    parts.push(`<div class="ryuukyoku"><div class="rk-main">流局</div><div class="rk-sub">山が尽きました — 配り直します</div></div>`);
+    parts.push(`<div class="ryuukyoku"><div class="rk-main">流局</div></div>`);
+  }
+  if (game.redealFlash) {
+    parts.push(`<div class="ryuukyoku redeal"><div class="rk-main">配り直し</div><div class="rk-sub">${game.redealFlash}回目</div></div>`);
   }
 
   // 中央
@@ -125,6 +128,7 @@ function boardHTML(game, tenpai, furiten) {
       : `<div>山 残り</div><div class="cnt">${game.wall.length}</div>`;
   const pills = [
     game.riichi ? `<span class="pill rii">${game.doubleRiichi ? 'ダブルリーチ' : 'リーチ'}</span>` : '',
+    game.resets ? `<span class="pill rd">配り直し ${game.resets}</span>` : '',
     tenpai ? '<span class="pill tp">テンパイ</span>' : '',
     furiten ? `<span class="pill fu" title="${furiten}">フリテン</span>` : '',
   ].join('');
@@ -135,6 +139,11 @@ function boardHTML(game, tenpai, furiten) {
 export function render(game) {
   const app = $('app');
   document.querySelector('header').hidden = game.phase === 'idle'; // ホーム画面では戻るボタンとタイマーを出さない
+
+  if (game.phase === 'countdown') {
+    app.innerHTML = `<div class="start"><div class="countdown" key="${game.countdown}">${game.countdown}</div></div>`;
+    return;
+  }
 
   if (game.phase === 'idle') {
     app.innerHTML = `<div class="start"><h1>スピード役満</h1>
@@ -198,7 +207,7 @@ export function showResult(game, { isBest }) {
     <div class="yaku">${r.yaku.join('・')}</div>
     ${r.detail ? `<div class="meta">${r.detail}</div>` : ''}
     <div class="inds"><span>ドラ表示牌</span>${r.doraInds.map((t) => tileHTML(t, { small: true, extra: 'inline' })).join('')}${r.uraInds ? `<span class="sep">裏ドラ表示牌</span>${r.uraInds.map((t) => tileHTML(t, { small: true, extra: 'inline' })).join('')}` : ''}</div>
-    <div class="winhand">
+    <div class="winhand" style="--n:${r.hand.length + 1 + r.melds.reduce((s, m) => s + m.tiles.length, 0)};--g:${r.melds.length + 1}">
       ${r.melds.length ? `<div class="wh-melds">${r.melds.map((m) => `<div class="meld">${m.tiles.map(small).join('')}</div>`).join('')}</div>` : ''}
       <div class="wh-tiles">${r.hand.map(small).join('')}</div>
       <div class="wh-win">${small(r.win.tile)}</div>
@@ -220,6 +229,8 @@ export function startClock(game) {
       $('total').textContent = formatTime(now() - game.runStartAt);
     } else if (game.phase === 'won') {
       $('total').textContent = formatTime(game.result.ms);
+    } else if (game.phase === 'countdown') {
+      $('total').textContent = formatTime(0);
     }
     requestAnimationFrame(tick);
   };

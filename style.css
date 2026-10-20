@@ -398,3 +398,28 @@ body { position: fixed; top: 0; left: 0; width: 100%; height: var(--vh100, 100dv
   .rank-tab { padding: 4px 9px; font-size: 12.5px; }
   .rank-body { height: min(calc(10 * 38px + 8px), calc(92dvh - 330px)); min-height: 150px; }
 }
+
+/* ダブルタップ・ピンチでのズームを無効化 */
+html, body, button, .tile { touch-action: manipulation; -webkit-text-size-adjust: 100%; }
+body { -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; }
+input { -webkit-user-select: text; user-select: text; }
+
+/* 3,2,1 カウントダウン */
+.countdown {
+  font-size: clamp(120px, 40vw, 260px); line-height: 1; color: #ffe08a; font-weight: 800;
+  text-shadow: 0 0 40px #f59e0b99, 0 6px 0 #7c4a03; animation: cd-pop .8s ease-out;
+}
+@keyframes cd-pop { from { transform: scale(1.8); opacity: 0; } 30% { opacity: 1; } to { transform: scale(1); opacity: 1; } }
+
+/* 配り直しの表示 (動画でも分かるように) */
+.ryuukyoku.redeal { animation: none; background: radial-gradient(circle, #1e3a8acc 0%, #0f172a99 75%); }
+.ryuukyoku.redeal .rk-main { animation: none; font-size: calc(var(--w) * 3.4); letter-spacing: .2em; padding-left: .2em; }
+.ryuukyoku.redeal .rk-sub { font-size: calc(var(--w) * 1); }
+.pill.rd { background: #2563eb; color: #fff; }
+
+/* 上がり画面: 牌が枠からはみ出さないよう、枚数に応じて牌幅を縮める */
+.card .winhand { gap: 4px calc(var(--w, 1px) * 0 + 10px); }
+.card .winhand .tile.small {
+  width: min(32px, calc((min(92vw, 560px) - 72px - 10px * var(--g, 1) - 2px * var(--n, 14)) / var(--n, 14)));
+}
+@media (max-width: 640px) { .card { padding: 22px 18px; } .card .winhand .tile.small { width: min(32px, calc((92vw - 36px - 10px * var(--g, 1) - 2px * var(--n, 14)) / var(--n, 14))); } }

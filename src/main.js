@@ -1,5 +1,5 @@
 import { Game } from './game.js';
-import { parseHand } from './tiles.js';
+import { parseHand, tileImage } from './tiles.js';
 import { addRecord } from './storage.js';
 import { render, showResult, hideResult, startClock, showConfirm, hideConfirm, showRanking, hideRanking } from './ui.js';
 import { fetchRanking, submitScore } from './api.js';
@@ -12,6 +12,18 @@ setVh();
 window.addEventListener("resize", setVh);
 window.addEventListener("orientationchange", setVh);
 if (window.visualViewport) window.visualViewport.addEventListener("resize", setVh);
+
+// 連続タップ・ピンチでのズームを止める (iOS Safari は viewport 指定だけでは効かない)
+document.addEventListener('gesturestart', (e) => e.preventDefault());
+
+// 牌画像を先に読み込んでデコードしておく (開始直後に絵柄が遅れて出るのを防ぐ)
+const preload = Promise.all(
+  ['img/Front.svg', 'img/Back.svg', ...Array.from({ length: 34 }, (_, t) => tileImage(t))].map((src) => {
+    const im = new Image();
+    im.src = src;
+    return (im.decode ? im.decode() : Promise.resolve()).catch(() => {});
+  }),
+);
 
 const q = new URLSearchParams(location.search);
 const forcedHand = q.has('debug') && q.get('hand') ? parseHand(q.get('hand')) : null; // 手牌指定は ?debug=1 のときだけ
@@ -33,7 +45,7 @@ const next = () => {
     hideResult();
     game.home();
   } else if (game.phase === "idle") {
-    game.startRun();
+    game.countdownStart(preload);
   }
 };
 
@@ -78,6 +90,7 @@ document.addEventListener('click', (e) => {
   else if (act === 'home') {
     if (game.phase === 'playing') showConfirm('ホームに戻りますか？', () => { hideResult(); game.home(); });
     else if (game.phase === 'won') { hideResult(); game.home(); }
+    else if (game.phase === 'countdown') game.home();
   }
   else if (act === 'tsumo') game.tsumo();
   else if (act === 'rank-open') openRanking(el.dataset.cat || DEFAULT_CAT, el.dataset.mine || '');
@@ -126,7 +139,7 @@ document.addEventListener('keydown', (e) => {
 });
 render(game);
 startClock(game);
-if (q.has('autostart')) game.startRun();
+if (q.has('autostart')) game.countdownStart(preload);
 // デバッグ: ?autoplay で自動ツモ切り・スキップ (見た目確認用)
 if (q.has('autoplay')) {
   setInterval(() => {

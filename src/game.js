@@ -27,10 +27,36 @@ export class Game {
   // ---- 操作 ----
   startRun() {
     this.resets = 0;
+    this.redealFlash = 0;
     this.result = null;
     this.phase = 'playing';
     this.runStartAt = now();
     this._deal();
+  }
+
+  // 3,2,1 のカウントダウンのあとに startRun する。ready は牌画像などの準備完了を待つ Promise
+  countdownStart(ready = Promise.resolve(), step = 800) {
+    if (this.phase !== 'idle') return;
+    const g = ++this.gen;
+    this.phase = 'countdown';
+    this.countdown = 3;
+    this._emit();
+    const wait = new Promise((r) => setTimeout(r, step));
+    const tick = () => {
+      if (g !== this.gen || this.phase !== 'countdown') return;
+      if (this.countdown > 1) {
+        this.countdown--;
+        this._emit();
+        setTimeout(tick, step);
+      } else {
+        Promise.all([ready, wait]).then(() => {
+          if (g !== this.gen || this.phase !== 'countdown') return;
+          this.countdown = 0;
+          this.startRun();
+        });
+      }
+    };
+    setTimeout(tick, step);
   }
 
   // ホーム(スタート画面)に戻る。進行中の局は破棄する
@@ -48,6 +74,16 @@ export class Game {
     if (this.phase !== 'playing') return;
     this.resets++;
     this._deal();
+    // 動画で配り直しが分かるよう、しばらく大きく表示する
+    const g = this.gen;
+    this.redealFlash = this.resets;
+    this._emit();
+    setTimeout(() => {
+      if (g === this.gen && this.redealFlash) {
+        this.redealFlash = 0;
+        this._emit();
+      }
+    }, 900);
   }
 
   // i: 手牌の index、または 'd' (ツモ切り)
