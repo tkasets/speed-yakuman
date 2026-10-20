@@ -137,7 +137,7 @@ export function render(game) {
   document.querySelector('header').hidden = game.phase === 'idle'; // ホーム画面では戻るボタンとタイマーを出さない
 
   if (game.phase === 'idle') {
-    app.innerHTML = `<a class="back-apps" href="https://t-kasets.com">← アプリ一覧</a><div class="start"><h1>スピード役満</h1>
+    app.innerHTML = `<a class="back-apps" href="https://t-kasets.com">&lt; アプリ一覧</a><div class="start"><h1>スピード役満</h1>
       <button class="btn primary" data-act="start">スタート <span class="kbd">(Space)</span></button>
       ${rankingEnabled() ? '<button class="btn ghost" data-act="rank-open">ランキング</button>' : ''}</div>`;
     return;
