@@ -115,9 +115,6 @@ function boardHTML(game, tenpai, furiten) {
   if (game.notice) {
     parts.push(`<div class="ryuukyoku"><div class="rk-main">流局</div></div>`);
   }
-  if (game.redealFlash) {
-    parts.push(`<div class="ryuukyoku redeal"><div class="rk-main">配り直し</div><div class="rk-sub">${game.redealFlash}回目</div></div>`);
-  }
 
   // 中央
   const cp = game.pending && game.pending.kind === 'call' ? game.pending : null;
@@ -128,7 +125,6 @@ function boardHTML(game, tenpai, furiten) {
       : `<div>山 残り</div><div class="cnt">${game.wall.length}</div>`;
   const pills = [
     game.riichi ? `<span class="pill rii">${game.doubleRiichi ? 'ダブルリーチ' : 'リーチ'}</span>` : '',
-    game.resets ? `<span class="pill rd">配り直し ${game.resets}</span>` : '',
     tenpai ? '<span class="pill tp">テンパイ</span>' : '',
     furiten ? `<span class="pill fu" title="${furiten}">フリテン</span>` : '',
   ].join('');
@@ -139,11 +135,6 @@ function boardHTML(game, tenpai, furiten) {
 export function render(game) {
   const app = $('app');
   document.querySelector('header').hidden = game.phase === 'idle'; // ホーム画面では戻るボタンとタイマーを出さない
-
-  if (game.phase === 'countdown') {
-    app.innerHTML = `<div class="start"><div class="countdown" key="${game.countdown}">${game.countdown}</div></div>`;
-    return;
-  }
 
   if (game.phase === 'idle') {
     app.innerHTML = `<div class="start"><h1>スピード役満</h1>
@@ -184,14 +175,24 @@ export function render(game) {
     ? `<div class="drawn">${tileHTML(game.drawn, { tag: 'button', dora: dora.includes(game.drawn), extra: qCls(game.drawn) + ' ' + hl(game.drawn, true) + (game.riichiPrompt === 'd' ? ' queued' : ''), attrs: 'data-act="discard" data-i="d"' })}</div>`
     : '';
   const furiten = waits.length ? game.furitenReason(waitsShape(game)) : '';
+  // 配り直し直後は手牌を少し揺らす。再描画されてもアニメが途切れないよう経過時間を delay に渡す
+  const since = now() - game.redealAt;
+  const nudge = since >= 0 && since < 400 ? ` style="animation:hand-nudge .4s ease-out ${(-since).toFixed(0)}ms"` : '';
   const board = boardHTML(game, waits.length > 0, furiten);
+  // 3,2,1 は半透過の膜の上に出す。スタートで膜が消え、「スタート」が薄くフェードアウトする (再描画されても途切れないよう経過時間を delay に渡す)
+  const goSince = now() - (game.goAt ?? -1e9);
+  const cdLayer = game.phase === 'countdown'
+    ? `<div class="cd-layer"><div class="countdown">${game.countdown}</div></div>`
+    : game.phase === 'playing' && goSince >= 0 && goSince < 900
+      ? `<div class="cd-layer go"><div class="countdown go-text" style="animation:go-fade .9s ease-out ${(-goSince).toFixed(0)}ms both">スタート</div></div>`
+      : '';
   app.innerHTML = `<div class="play">
     ${board}
-    <div class="hand-area">
+    <div class="hand-area"${nudge}>
       <div class="hand">${mine}</div>${drawn}
       <div class="melds">${game.melds.map((m) => meldHTML(m, dora)).join('')}</div>
     </div>
-    <div class="actions"><button class="btn ghost reset-btn" data-act="reset">配り直し <span class="kbd">(R)</span></button><div class="act-main">${actionsHTML(game)}</div></div></div>`;
+    <div class="actions"><button class="btn ghost reset-btn" data-act="reset">配り直し <span class="kbd">(R)</span></button><div class="act-main">${actionsHTML(game)}</div></div></div>${cdLayer}`;
 }
 
 export function showResult(game, { isBest }) {

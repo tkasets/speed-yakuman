@@ -406,16 +406,22 @@ input { -webkit-user-select: text; user-select: text; }
 
 /* 3,2,1 カウントダウン */
 .countdown {
-  font-size: clamp(120px, 40vw, 260px); line-height: 1; color: #ffe08a; font-weight: 800;
-  text-shadow: 0 0 40px #f59e0b99, 0 6px 0 #7c4a03; animation: cd-pop .8s ease-out;
+  font-size: clamp(56px, 16vw, 110px); line-height: 1; color: #ffe08a; font-weight: 800; opacity: .45;
+  text-shadow: 0 0 20px #f59e0b55; animation: cd-pop .8s ease-out;
 }
-@keyframes cd-pop { from { transform: scale(1.8); opacity: 0; } 30% { opacity: 1; } to { transform: scale(1); opacity: 1; } }
+@keyframes cd-pop { from { transform: scale(1.4); opacity: 0; } 30% { opacity: .45; } to { transform: scale(1); opacity: .45; } }
 
-/* 配り直しの表示 (動画でも分かるように) */
-.ryuukyoku.redeal { animation: none; background: radial-gradient(circle, #1e3a8acc 0%, #0f172a99 75%); }
-.ryuukyoku.redeal .rk-main { animation: none; font-size: calc(var(--w) * 3.4); letter-spacing: .2em; padding-left: .2em; }
-.ryuukyoku.redeal .rk-sub { font-size: calc(var(--w) * 1); }
-.pill.rd { background: #2563eb; color: #fff; }
+/* 配り直し: 手牌が上からほんの少し落ちる */
+@keyframes hand-nudge { 0% { transform: translateY(-9px); opacity: .6; } 60% { transform: translateY(1px); opacity: 1; } 100% { transform: none; opacity: 1; } }
+
+/* カウントダウンの膜: 3,2,1 の間だけ半透過、スタートで消える */
+.cd-layer {
+  position: fixed; left: 0; right: 0; bottom: 0; top: var(--hdr); z-index: 8;
+  display: flex; align-items: center; justify-content: center; background: #000000a6;
+}
+.cd-layer.go { background: none; pointer-events: none; }
+.countdown.go-text { font-size: clamp(40px, 12vw, 84px); letter-spacing: .15em; padding-left: .15em; animation: none; }
+@keyframes go-fade { from { opacity: .45; transform: scale(1); } to { opacity: 0; transform: scale(1.12); } }
 
 /* 上がり画面: 牌が枠からはみ出さないよう、枚数に応じて牌幅を縮める */
 .card .winhand { gap: 4px calc(var(--w, 1px) * 0 + 10px); }
@@ -423,3 +429,12 @@ input { -webkit-user-select: text; user-select: text; }
   width: min(32px, calc((min(92vw, 560px) - 72px - 10px * var(--g, 1) - 2px * var(--n, 14)) / var(--n, 14)));
 }
 @media (max-width: 640px) { .card { padding: 22px 18px; } .card .winhand .tile.small { width: min(32px, calc((92vw - 36px - 10px * var(--g, 1) - 2px * var(--n, 14)) / var(--n, 14))); } }
+
+/* カウントダウンの膜: 3,2,1 の間だけ半透過、スタートで消える */
+.cd-layer {
+  position: fixed; left: 0; right: 0; bottom: 0; top: var(--hdr); z-index: 8;
+  display: flex; align-items: center; justify-content: center; background: #000000a6;
+}
+.cd-layer.go { background: none; pointer-events: none; }
+.countdown.go-text { font-size: clamp(40px, 12vw, 84px); letter-spacing: .15em; padding-left: .15em; animation: none; }
+@keyframes go-fade { from { opacity: .45; transform: scale(1); } to { opacity: 0; transform: scale(1.12); } }

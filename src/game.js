@@ -27,10 +27,11 @@ export class Game {
   // ---- 操作 ----
   startRun() {
     this.resets = 0;
-    this.redealFlash = 0;
+    this.redealAt = -1e9;
     this.result = null;
     this.phase = 'playing';
     this.runStartAt = now();
+    this.goAt = this.runStartAt; // 「スタート」表示のフェード用 (ui.js)
     this._deal();
   }
 
@@ -40,6 +41,10 @@ export class Game {
     const g = ++this.gen;
     this.phase = 'countdown';
     this.countdown = 3;
+    // 配牌はまだ見せない: 空の卓だけ映す
+    this.hand = []; this.melds = []; this.rivers = [[], [], [], []]; this.drawn = null; this.pending = null;
+    this.wall = new Array(70).fill(0); this.doraCount = 0; this.doraIndicators = [];
+    this.riichi = false; this.doubleRiichi = false; this.notice = ''; this.toast = ''; this.resets = 0;
     this._emit();
     const wait = new Promise((r) => setTimeout(r, step));
     const tick = () => {
@@ -73,17 +78,8 @@ export class Game {
   reset() {
     if (this.phase !== 'playing') return;
     this.resets++;
+    this.redealAt = now(); // 手牌を少し揺らして配り直しを分かるようにする (ui.js)
     this._deal();
-    // 動画で配り直しが分かるよう、しばらく大きく表示する
-    const g = this.gen;
-    this.redealFlash = this.resets;
-    this._emit();
-    setTimeout(() => {
-      if (g === this.gen && this.redealFlash) {
-        this.redealFlash = 0;
-        this._emit();
-      }
-    }, 900);
   }
 
   // i: 手牌の index、または 'd' (ツモ切り)
