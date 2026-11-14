@@ -9,8 +9,10 @@ export function waitsOf(tiles, melds, dora, extra = {}) {
   for (let t = 0; t < 34; t++) {
     if (have[t] >= 4) continue;
     const counts = countsOf(tiles.concat([t]));
-    let r = judge({ counts, melds, winTile: t, tsumo: false, dora, ...extra });
-    if (r.length === 0) r = judge({ counts, melds, winTile: t, tsumo: true, dora, ...extra });
+    // ロン・ツモの両方を判定し、役満になる方を優先 (シャンポン待ちの四暗刻はツモのみ役満)
+    const ron = judge({ counts, melds, winTile: t, tsumo: false, dora, ...extra });
+    const tsu = judge({ counts, melds, winTile: t, tsumo: true, dora, ...extra });
+    const r = ron.length && !(tsu.kind === 'yakuman' && tsu.length && ron.kind !== 'yakuman') ? ron : tsu;
     if (r.length) out.push({ tile: t, kind: r.kind });
   }
   return out;
