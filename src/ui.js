@@ -135,6 +135,23 @@ function boardHTML(game, tenpai, furiten) {
   return `<div class="board">${parts.join('')}</div>`;
 }
 
+// 変わった部分だけ差し替える。毎回 innerHTML で全部作り直すと、カーソル下の牌が消えてホバーが途切れ、ガタつく
+function patch(root, html) {
+  const t = document.createElement('div');
+  t.innerHTML = html;
+  const same = (a, b) => a.length === b.length && [...a].every((n, i) => n.nodeType === 1 && n.tagName === b[i].tagName && n.className === b[i].className);
+  const sync = (cur, next, deep) => {
+    if (!same(cur.children, next.children)) { cur.innerHTML = next.innerHTML; return; }
+    [...next.children].forEach((n, i) => {
+      const o = cur.children[i];
+      if (o.outerHTML === n.outerHTML) return;
+      if (deep && o.classList.contains('play')) sync(o, n, false);
+      else o.replaceWith(n);
+    });
+  };
+  sync(root, t, true);
+}
+
 export function render(game) {
   const app = $('app');
   if (!hoverBound) {
@@ -194,13 +211,13 @@ export function render(game) {
     : game.phase === 'playing' && goSince >= 0 && goSince < 900
       ? `<div class="cd-layer go"><div class="countdown go-text" style="animation:go-fade .9s ease-out ${(-goSince).toFixed(0)}ms both">スタート</div></div>`
       : '';
-  app.innerHTML = `<div class="play">
+  patch(app, `<div class="play">
     ${board}
     <div class="hand-area"${nudge}>
       <div class="hand">${mine}</div>${drawn}
       <div class="melds">${game.melds.map((m) => meldHTML(m, dora)).join('')}</div>
     </div>
-    <div class="actions"><button class="btn ghost reset-btn" data-act="reset">配り直し <span class="kbd">(R)</span></button><div class="act-main">${actionsHTML(game)}</div></div></div>${cdLayer}`;
+    <div class="actions"><button class="btn ghost reset-btn" data-act="reset">配り直し <span class="kbd">(R)</span></button><div class="act-main">${actionsHTML(game)}</div></div></div>${cdLayer}`);
 }
 
 export function showResult(game, { isBest }) {
