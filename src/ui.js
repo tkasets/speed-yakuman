@@ -6,6 +6,9 @@ import { CATEGORIES, registrable } from './categories.js';
 
 const $ = (id) => document.getElementById(id);
 const PLAYERS = ['あなた (東)', 'CPU 南', 'CPU 西', 'CPU 北'];
+// 再描画で牌が作り直されてもホバー状態(浮き上がり)を保つため、カーソル下の牌を覚えておく
+let hoverI = null;
+let hoverBound = false;
 
 function tileHTML(t, { small = false, tag = "div", attrs = "", extra = "", dora = false } = {}) {
   return `<${tag} class="tile ${small ? "small" : ""} ${dora ? "dora" : ""} ${extra}" ${attrs}><img src="${tileImage(t)}" alt="${tileLabel(t).top}${tileLabel(t).bottom}" draggable="false"></${tag}>`;
@@ -134,6 +137,11 @@ function boardHTML(game, tenpai, furiten) {
 
 export function render(game) {
   const app = $('app');
+  if (!hoverBound) {
+    hoverBound = true;
+    app.addEventListener('pointerover', (e) => { const b = e.target.closest('button.tile[data-i]'); if (b) hoverI = b.dataset.i; });
+    app.addEventListener('pointerout', (e) => { const b = e.target.closest('button.tile[data-i]'); if (b && !(e.relatedTarget && b.contains(e.relatedTarget))) hoverI = null; });
+  }
   document.querySelector('header').hidden = game.phase === 'idle'; // ホーム画面では戻るボタンとタイマーを出さない
 
   if (game.phase === 'idle') {
@@ -169,10 +177,10 @@ export function render(game) {
     return '';
   };
   const mine = game.hand
-    .map((t, i) => tileHTML(t, { tag: 'button', dora: dora.includes(t), extra: qCls(t) + ' ' + hl(t) + (game.riichiPrompt === i ? ' queued' : ''), attrs: `data-act="discard" data-i="${i}"` }))
+    .map((t, i) => tileHTML(t, { tag: 'button', dora: dora.includes(t), extra: qCls(t) + ' ' + hl(t) + (game.riichiPrompt === i ? ' queued' : '') + (hoverI === String(i) ? ' hov' : ''), attrs: `data-act="discard" data-i="${i}"` }))
     .join('');
   const drawn = game.drawn !== null
-    ? `<div class="drawn">${tileHTML(game.drawn, { tag: 'button', dora: dora.includes(game.drawn), extra: qCls(game.drawn) + ' ' + hl(game.drawn, true) + (game.riichiPrompt === 'd' ? ' queued' : ''), attrs: 'data-act="discard" data-i="d"' })}</div>`
+    ? `<div class="drawn">${tileHTML(game.drawn, { tag: 'button', dora: dora.includes(game.drawn), extra: qCls(game.drawn) + ' ' + hl(game.drawn, true) + (game.riichiPrompt === 'd' ? ' queued' : '') + (hoverI === 'd' ? ' hov' : ''), attrs: 'data-act="discard" data-i="d"' })}</div>`
     : '';
   const furiten = waits.length ? game.furitenReason(waitsShape(game)) : '';
   // 配り直し直後は手牌を少し揺らす。再描画されてもアニメが途切れないよう経過時間を delay に渡す
